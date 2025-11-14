@@ -1,40 +1,42 @@
-import 'dart:async';
-
-import 'package:meta/meta.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:xtimer/data/task_manager.dart';
-import 'package:bloc/bloc.dart';
 import 'package:xtimer/pages/home_page/home_events.dart';
 import 'package:xtimer/pages/home_page/home_state.dart';
 
-class HomeBloc extends Bloc<HomeEvent, HomeState>{
+class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final TaskManager taskManager;
 
-  HomeBloc({ @required this.taskManager});
+  HomeBloc({required this.taskManager}) : super(HomeStateLoading()) {
+    /// Event → Handler 등록
+    on<LoadTasksEvent>(_onLoadTasks);
+    on<SaveTaskEvent>(_onSaveTask);
+    on<DeleteTaskEvent>(_onDeleteTask);
+  }
 
-  @override
-  HomeState get initialState => HomeStateLoading();
+  /// 처리: LoadTasksEvent
+  Future<void> _onLoadTasks(
+      LoadTasksEvent event, Emitter<HomeState> emit) async {
+    emit(HomeStateLoading());
+    final data = await taskManager.loadAllTasks();
+    emit(HomeStateLoaded(tasks: data));
+  }
 
-  @override
-  Stream<HomeState> mapEventToState(
-      HomeState currentState, HomeEvent event) async*{
+  /// 처리: SaveTaskEvent
+  Future<void> _onSaveTask(
+      SaveTaskEvent event, Emitter<HomeState> emit) async {
+    emit(HomeStateLoading());
+    await taskManager.addNewTask(event.task);
 
-    if(event is LoadTasksEvent){
-      yield HomeStateLoading();
+    /// dispatch → add
+    add(LoadTasksEvent());
+  }
 
-      final data = await taskManager.loadAllTasks();
-      yield HomeStateLoaded(tasks: data);
-    }
+  /// 처리: DeleteTaskEvent
+  Future<void> _onDeleteTask(
+      DeleteTaskEvent event, Emitter<HomeState> emit) async {
+    await taskManager.deleteTask(event.task);
 
-    if(event is SaveTaskEvent){
-      yield HomeStateLoading();
-      await taskManager.addNewTask(event.task);
-
-      dispatch(LoadTasksEvent());
-    }
-
-    if(event is DeleteTaskEvent) {
-      await taskManager.deleteTask(event.task);
-    }
-
+    /// 삭제 후 리스트 다시 로드
+    add(LoadTasksEvent());
   }
 }

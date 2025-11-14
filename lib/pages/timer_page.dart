@@ -1,227 +1,232 @@
-import 'package:flutter/foundation.dart';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:xtimer/model/task_model.dart';
 import 'package:xtimer/widgets/rounded_button_widget.dart';
-import 'dart:async';
-
 import 'package:xtimer/widgets/wave_animation.dart';
 
 class TimerPage extends StatefulWidget {
   final Task task;
 
-  TimerPage({Key key, @required this.task}) : super(key: key);
+  const TimerPage({
+    Key? key,
+    required this.task,
+  }) : super(key: key);
 
   @override
-  _TimerPageState createState() => _TimerPageState();
+  State<TimerPage> createState() => _TimerPageState();
 }
 
 class _TimerPageState extends State<TimerPage>
     with SingleTickerProviderStateMixin {
-  Timer timer;
 
-  Task get task => widget.task;
-
-  /// Store the time
-  /// You will pass the minutes.
-  String timeText = '';
-  String statusText = '';
-  String buttonText = 'Start';
+  late Timer _timer;
+  late AnimationController _controller;
 
   Stopwatch stopwatch = Stopwatch();
-  static const delay = Duration(microseconds: 1);
+  String timeText = "";
+  String statusText = "";
+  String buttonText = "Start";
 
-  /// for animation
-  var begin = 0.0;
-  Animation<double> heightSize;
-  AnimationController _controller;
-
-  /// Called each time the time is ticking
-  void updateClock() {
-    final duration = Duration(hours: task.hours, minutes: task.minutes, seconds: task.seconds);
-
-    // if time is up, stop the timer
-    if (stopwatch.elapsed.inMilliseconds == duration.inMilliseconds) {
-        print('--finished Timer Page--');
-        stopwatch.stop();
-        stopwatch.reset();
-        _controller.stop(canceled: false);
-        setState(() {
-          statusText = 'Finished';
-          buttonText = "Restart";
-        });
-      return;
-    }else {
-      statusText = '';
-    }
-
-    final millisecondsRemaining = duration.inMilliseconds - stopwatch.elapsed.inMilliseconds;
-    final hoursRemaining = ((millisecondsRemaining / (1000*60*60)) % 24).toInt();
-    final minutesRemaining = ((millisecondsRemaining / (1000*60)) % 60).toInt();
-    final secondsRemaining = ((millisecondsRemaining / 1000) % 60).toInt();
-
-    setState(() {
-      timeText =
-          '${hoursRemaining.toString().padLeft(2, '0')}:'
-              '${minutesRemaining.toString().padLeft(2, '0')}:'
-              '${secondsRemaining.toString().padLeft(2, '0')}';
-    });
-
-    if (stopwatch.isRunning) {
-      setState(() {
-        buttonText = "Running";
-      });
-    } else if (stopwatch.elapsed.inSeconds == 0) {
-      setState(() {
-        timeText = '${task.hours.toString().padLeft(2, "0")}:'
-            '${task.minutes.toString().padLeft(2, '0')}:'
-            '${task.seconds.toString().padLeft(2, '0')}';
-        buttonText = "Start";
-      });
-    } else {
-      setState(() {
-        buttonText = "Paused";
-      });
-    }
-  }
+  double beginHeight = 0.0;
+  late Animation<double> heightSize;
 
   @override
   void initState() {
     super.initState();
+
     final duration = Duration(
-        days: 0,
-        hours: task.hours,
-        minutes: task.minutes,
-        seconds: task.seconds
+      hours: widget.task.hours,
+      minutes: widget.task.minutes,
+      seconds: widget.task.seconds,
     );
+
     _controller = AnimationController(
       duration: duration,
       vsync: this,
     );
 
-    timer = Timer.periodic(delay, (Timer t) => updateClock());
+    heightSize = Tween<double>(
+      begin: beginHeight,
+      end: 0,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    ));
+
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) => updateClock());
+
+    _setInitialTimeText();
+  }
+
+  void _setInitialTimeText() {
+    timeText =
+    "${widget.task.hours.toString().padLeft(2, '0')}:"
+        "${widget.task.minutes.toString().padLeft(2, '0')}:"
+        "${widget.task.seconds.toString().padLeft(2, '0')}";
+  }
+
+  void updateClock() {
+    final duration = Duration(
+      hours: widget.task.hours,
+      minutes: widget.task.minutes,
+      seconds: widget.task.seconds,
+    );
+
+    if (!stopwatch.isRunning) return;
+
+    if (stopwatch.elapsed >= duration) {
+      stopwatch.stop();
+      _controller.stop();
+
+      setState(() {
+        statusText = "Finished";
+        buttonText = "Restart";
+        timeText = "00:00:00";
+      });
+
+      return;
+    }
+
+    final remaining = duration - stopwatch.elapsed;
+
+    setState(() {
+      timeText =
+      "${remaining.inHours.toString().padLeft(2, '0')}:"
+          "${(remaining.inMinutes % 60).toString().padLeft(2, '0')}:"
+          "${(remaining.inSeconds % 60).toString().padLeft(2, '0')}";
+    });
   }
 
   @override
   void dispose() {
+    _timer.cancel();
     _controller.dispose();
-    stopwatch.stop();
-    timer.cancel();
     super.dispose();
   }
 
-  void _restartCountDown() {
-    begin = 0.0;
-    _controller.reset();
-    stopwatch.stop();
+  void _restart() {
     stopwatch.reset();
+    stopwatch.stop();
+    _controller.reset();
+    beginHeight = 0.0;
+
+    setState(() {
+      buttonText = "Start";
+      statusText = "";
+    });
+
+    _setInitialTimeText();
+  }
+
+  void _toggleStartPause() {
+    if (stopwatch.isRunning) {
+      stopwatch.stop();
+      _controller.stop();
+      statusText = "Paused";
+    } else {
+      stopwatch.start();
+      _controller.forward();
+      statusText = "";
+    }
+
+    setState(() {
+      buttonText = stopwatch.isRunning ? "Running" : "Paused";
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    heightSize =
-        new Tween(begin: begin, end: MediaQuery.of(context).size.height - 65)
-            .animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeInOut,
-      ),
-    );
-
-    Size size = Size(MediaQuery.of(context).size.width, heightSize.value);
+    heightSize = Tween<double>(
+      begin: beginHeight,
+      end: MediaQuery.of(context).size.height - 65,
+    ).animate(_controller);
 
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
-        children: <Widget>[
+        children: [
           AnimatedBuilder(
             animation: _controller,
-            builder: (context, child) {
-              return DemoBody(size: size, color: task.color);
+            builder: (context, _) {
+              return DemoBody(
+                size: Size(
+                  MediaQuery.of(context).size.width,
+                  heightSize.value,
+                ),
+                color: widget.task.color,
+              );
             },
           ),
           Padding(
-            padding: const EdgeInsets.only(top: 32.0, left: 4.0, right: 4.0),
+            padding: const EdgeInsets.only(top: 32, left: 4, right: 4),
             child: Row(
-              children: <Widget>[
+              children: [
                 IconButton(
-                    icon: Icon(
-                      Icons.navigate_before,
-                      size: 40.0,
-                      color: Colors.white70,
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    }),
-                Spacer(),
+                  icon: const Icon(Icons.navigate_before,
+                      size: 40, color: Colors.white70),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                const Spacer(),
                 IconButton(
-                  icon: Icon(
-                    Icons.sync,
-                    size: 32.0,
-                    color: Colors.white70,
-                  ),
-                  onPressed: _restartCountDown,
+                  icon: const Icon(Icons.sync,
+                      size: 32, color: Colors.white70),
+                  onPressed: _restart,
                 ),
               ],
             ),
           ),
+
           Align(
             alignment: Alignment.center,
             child: Container(
-              margin: EdgeInsets.only(bottom: 250),
-              child: Center(
-                child: Text(
-                  task.title,
-                  style: TextStyle(
-                      fontSize: 24.0,
-                      color: Colors.white70,
-                      fontWeight: FontWeight.bold),
-                ),
+              margin: const EdgeInsets.only(bottom: 250),
+              child: Text(
+                widget.task.title,
+                style: const TextStyle(
+                    fontSize: 24,
+                    color: Colors.white70,
+                    fontWeight: FontWeight.bold),
               ),
             ),
           ),
+
           Align(
             alignment: Alignment.center,
             child: Container(
-              margin: EdgeInsets.only(bottom: 100),
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Text(
-                      timeText,
-                      style: TextStyle(fontSize: 54.0, color: Colors.white),
-                    ),
-                    Text(
-                      statusText,
-                      style: TextStyle(color: Colors.white70),
-                    ),
-                  ],
-                ),
+              margin: const EdgeInsets.only(bottom: 100),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    timeText,
+                    style: const TextStyle(
+                        fontSize: 54, color: Colors.white),
+                  ),
+                  Text(
+                    statusText,
+                    style: const TextStyle(color: Colors.white70),
+                  ),
+                ],
               ),
             ),
           ),
+
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
-              margin: EdgeInsets.only(bottom: 32),
+              margin: const EdgeInsets.only(bottom: 32),
               child: GestureDetector(
-                  child: RoundedButton(text: buttonText),
-                  onTap: () {
-                    if (stopwatch.isRunning) {
-                      print('--Paused--');
-                      stopwatch.stop();
-                      _controller.stop(canceled: false);
-                    } else {
-                      print('--Running--');
-                      begin = 50.0;
-                      stopwatch.start();
-                      _controller.forward();
-                    }
-
-                    updateClock();
-                  }),
+                child: RoundedButton(text: buttonText),
+                onTap: () {
+                  if (buttonText == "Restart") {
+                    _restart();
+                  } else {
+                    _toggleStartPause();
+                  }
+                },
+              ),
             ),
-          )
+          ),
         ],
       ),
     );

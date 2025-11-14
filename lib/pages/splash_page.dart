@@ -1,42 +1,41 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-
 import 'package:flutter/services.dart';
 
 class SplashPage extends StatefulWidget {
-  SplashPage({Key key}) : super(key: key);
+  const SplashPage({Key? key}) : super(key: key);
 
   @override
-  _SplashPageState createState() => new _SplashPageState();
+  State<SplashPage> createState() => _SplashPageState();
 }
 
 class _SplashPageState extends State<SplashPage> {
-  startTimer() async {
-    // pause for a while then start home screen
-    var duration = Duration(seconds: 3);
-    return Timer(duration, () {
+
+  void _startTimer() {
+    Timer(const Duration(seconds: 3), () {
+      if (!mounted) return;
       Navigator.pushReplacementNamed(context, '/home');
     });
   }
 
   @override
   void initState() {
-    // Set this screen as a fullscreen
-    SystemChrome.setEnabledSystemUIOverlays([]);
-
     super.initState();
 
-    startTimer();
+    // 전체 화면으로 설정 (Status bar, Navigation bar 숨김)
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+
+    _startTimer();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: new Center(
-        child: Image.asset(
-          'images/logox.png',
-          width: 100.0,
-          height: 100.0,
+    return const Scaffold(
+      body: Center(
+        child: Image(
+          image: AssetImage('images/logox.png'),
+          width: 100,
+          height: 100,
         ),
       ),
     );

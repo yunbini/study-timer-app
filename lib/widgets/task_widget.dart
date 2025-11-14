@@ -4,13 +4,16 @@ import 'package:xtimer/model/task_model.dart';
 import 'package:xtimer/pages/timer_page.dart';
 
 class TaskWidget extends StatelessWidget {
-  TaskWidget({Key key, this.task});
+  TaskWidget({
+    Key? key,
+    required this.task,
+  }) : super(key: key);
 
   final Task task;
-  final BorderRadius _borderRadius = BorderRadius.circular(8.0);
+  final BorderRadius _borderRadius = BorderRadius.all(Radius.circular(8.0));
 
   /// When called start timer Screen
-  void _startTimerPage(BuildContext context, Task task) {
+  void _startTimerPage(BuildContext context) {
     Navigator.of(context, rootNavigator: true).push(
       CupertinoPageRoute(
         builder: (_) => TimerPage(task: task),
@@ -30,46 +33,58 @@ class TaskWidget extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: _borderRadius,
         border: Border.all(
-          color: Colors.grey,
-          width: 0.5,
+          color: Colors.grey.shade400,
+          width: 0.7,
         ),
       ),
       child: InkWell(
-        onTap: () => _startTimerPage(context, task),
+        onTap: () => _startTimerPage(context),
         borderRadius: _borderRadius,
         child: Padding(
-          padding: EdgeInsets.only(left: 8, top: 26, bottom: 26, right: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 26),
           child: Row(
             children: <Widget>[
+              // 작은 컬러 동그라미
               Container(
-                margin: EdgeInsets.only(
-                    left: 8.0, top: 8.0, bottom: 8.0, right: 12.0),
+                margin: const EdgeInsets.only(
+                    left: 8.0, right: 12.0, top: 8.0, bottom: 8.0),
                 width: 15.0,
                 height: 15.0,
                 decoration: BoxDecoration(
-                    color: task.color,
-                    borderRadius: BorderRadius.circular(40.0)),
+                  color: task.color,
+                  shape: BoxShape.circle,
+                ),
               ),
+
+              // 제목 + Duration
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(
                     task.title,
-                    style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 19.0,
-                        fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 19.0,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   Text(
                     'Duration: ${_formatDuration()}',
-                    style: TextStyle(color: Colors.black, fontSize: 14.0),
+                    style: const TextStyle(
+                      color: Colors.black54,
+                      fontSize: 14.0,
+                    ),
                   ),
                 ],
               ),
-              new Spacer(),
-              new Icon(
+
+              const Spacer(),
+
+              // 오른쪽 화살표
+              Icon(
                 Icons.navigate_next,
                 color: task.color,
+                size: 28,
               )
             ],
           ),

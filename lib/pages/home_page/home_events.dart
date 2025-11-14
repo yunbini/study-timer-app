@@ -1,27 +1,42 @@
 import 'package:equatable/equatable.dart';
-import 'package:meta/meta.dart';
 import 'package:xtimer/model/task_model.dart';
 
-abstract class HomeEvent extends Equatable{
-  HomeEvent([List tmp = const []]): super(tmp);
+abstract class HomeEvent extends Equatable {
+  const HomeEvent();
+
+  @override
+  List<Object?> get props => [];
 }
 
-class LoadTasksEvent extends HomeEvent{
+class LoadTasksEvent extends HomeEvent {
+  const LoadTasksEvent();
+
+  @override
+  List<Object?> get props => [];
+
   @override
   String toString() => 'LoadTasksEvent';
 }
 
-class SaveTaskEvent extends HomeEvent{
+class SaveTaskEvent extends HomeEvent {
   final Task task;
-  SaveTaskEvent({ @required this.task}): super([task]);
+
+  const SaveTaskEvent({required this.task});
+
+  @override
+  List<Object?> get props => [task];
 
   @override
   String toString() => 'SaveTaskEvent';
 }
 
-class DeleteTaskEvent extends HomeEvent{
+class DeleteTaskEvent extends HomeEvent {
   final Task task;
-  DeleteTaskEvent({ @required this.task}): super([task]);
+
+  const DeleteTaskEvent({required this.task});
+
+  @override
+  List<Object?> get props => [task];
 
   @override
   String toString() => 'DeleteTaskEvent';

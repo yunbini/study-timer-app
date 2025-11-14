@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:xtimer/pages/bottom_sheet.dart';
 import 'package:xtimer/pages/home_page/home_bloc.dart';
 import 'package:xtimer/pages/home_page/home_events.dart';
 import 'package:xtimer/pages/home_page/home_state.dart';
 import 'package:xtimer/widgets/task_widget.dart';
 import 'package:xtimer/pages/new_task_page.dart';
-
 import 'package:xtimer/model/task_model.dart';
-import 'package:flutter/cupertino.dart';
 
 class HomePage extends StatefulWidget {
   final String title = 'Task Timer';
   final HomeBloc homeBloc;
 
-  const HomePage({@required this.homeBloc}) : assert(homeBloc != null);
+  const HomePage({Key? key, required this.homeBloc}) : super(key: key);
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -22,39 +19,53 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   HomeBloc get _homeBloc => widget.homeBloc;
-  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  void _openBottomSheet() async {
-    final newTask = await showCustomModalBottomSheet<Task>(
-        context: context,
-        builder: (context) {
-          return GestureDetector(
-            onTap: () {},
-            child: Container(
-              color: Color(0xFF737373),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    topRight: Radius.circular(16),
-                  ),
+  Future<void> _openBottomSheet() async {
+    final newTask = await showModalBottomSheet<Task>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.5,
+          maxChildSize: 0.9,
+          minChildSize: 0.3,
+          expand: false,
+          builder: (context, scrollController) {
+            return Container(
+              padding: EdgeInsets.only(
+                top: 16,
+                left: 16,
+                right: 16,
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(16),
                 ),
+              ),
+              child: SingleChildScrollView(
+                controller: scrollController,
                 child: NewTaskPage(),
               ),
-            ),
-          );
-        });
+            );
+          },
+        );
+      },
+    );
 
+    // bottom sheet에서 Task 객체가 반환되면 Bloc에 이벤트 전달
     if (newTask != null) {
-      _homeBloc.dispatch(SaveTaskEvent(task: newTask));
+      _homeBloc.add(SaveTaskEvent(task: newTask));
     }
   }
 
   @override
   void initState() {
-    _homeBloc.dispatch(LoadTasksEvent());
     super.initState();
+    _homeBloc.add(const LoadTasksEvent());
   }
 
   @override
@@ -67,67 +78,79 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Colors.transparent,
         title: Text(
           widget.title,
-          style: TextStyle(
-              color: Colors.black, fontSize: 32.0, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            color: Colors.black,
+            fontSize: 32.0,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add, size: 26, color: Colors.black),
+        child: const Icon(Icons.add, size: 26, color: Colors.black),
         backgroundColor: Colors.white,
         onPressed: _openBottomSheet,
       ),
-      body: Container(
-        child: BlocBuilder<HomeEvent, HomeState>(
-            bloc: _homeBloc,
-            builder: (BuildContext context, state) {
-              if (state is HomeStateLoading)
-                return Center(child: CircularProgressIndicator());
+      body: BlocBuilder<HomeBloc, HomeState>(
+        bloc: _homeBloc,
+        builder: (BuildContext context, HomeState state) {
+          if (state is HomeStateLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-              if (state is HomeStateLoaded) {
-                final List<Task> tasks = state.tasks;
+          if (state is HomeStateLoaded) {
+            final List<Task> tasks = state.tasks;
 
-                if (tasks.isEmpty)
-                  return Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        Text('No Tasks',
-                            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                        Text('Add a new Task and it\nwill show up here.',
-                            textAlign: TextAlign.center)
-                      ],
-                    ),
-                  );
-
-                return ListView.builder(
-                  itemCount: tasks.length,
-                  padding: const EdgeInsets.only(top: 8),
-                  itemBuilder: (BuildContext context, int index) {
-                    final Task item = tasks.elementAt(index);
-                    return Container(
-                      margin: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      child: Dismissible(
-                        background: Container(color: Colors.red),
-                        direction: DismissDirection.endToStart,
-                        key: ObjectKey(item),
-                          child: TaskWidget(task: item),
-                        onDismissed: (direction) {
-                          tasks.remove(item);
-                          setState(() {});
-                          _homeBloc.dispatch(DeleteTaskEvent(task: item));
-
-                          Scaffold.of(context)
-                              .showSnackBar(
-                              SnackBar(content: Text("Task Deleted")));
-                        },
+            if (tasks.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const <Widget>[
+                    Text(
+                      'No Tasks',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
                       ),
-                    );
-                  },
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Add a new Task and it\nwill show up here.',
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            return ListView.builder(
+              itemCount: tasks.length,
+              padding: const EdgeInsets.only(top: 8),
+              itemBuilder: (BuildContext context, int index) {
+                final Task item = tasks[index];
+
+                return Container(
+                  margin: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 8),
+                  child: Dismissible(
+                    background: Container(color: Colors.red),
+                    direction: DismissDirection.endToStart,
+                    key: ObjectKey(item),
+                    child: TaskWidget(task: item),
+                    onDismissed: (direction) {
+                      _homeBloc.add(DeleteTaskEvent(task: item));
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Task Deleted")),
+                      );
+                    },
+                  ),
                 );
-              } else {
-                return SizedBox.shrink();
-              }
-            }),
+              },
+            );
+          }
+
+          return const SizedBox.shrink();
+        },
       ),
     );
   }
