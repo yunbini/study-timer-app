@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:xtimer/model/task_model.dart';
+import 'package:xtimer/services/sensor_service.dart';
 import 'package:xtimer/widgets/rounded_button_widget.dart';
 import 'package:xtimer/widgets/wave_animation.dart';
+import 'package:xtimer/services/sensor_service.dart';
 
 class TimerPage extends StatefulWidget {
   final Task task;
@@ -22,6 +24,9 @@ class _TimerPageState extends State<TimerPage>
   late Timer _timer;
   late AnimationController _controller;
 
+  late final FocusSensorService _sensorService; //센서 서비스 객체
+  bool _isPausedBySensor = false; //센서 감지후 일시정지 상태를 저장하는 변수
+
   Stopwatch stopwatch = Stopwatch();
   String timeText = "";
   String statusText = "";
@@ -33,6 +38,9 @@ class _TimerPageState extends State<TimerPage>
   @override
   void initState() {
     super.initState();
+
+    _sensorService = FocusSensorService();//FocusSensorService 객체 초기화
+    _sensorService.startListening(); //센서 리스닝 시작
 
     final duration = Duration(
       hours: widget.task.hours,
@@ -72,7 +80,29 @@ class _TimerPageState extends State<TimerPage>
       seconds: widget.task.seconds,
     );
 
-    if (!stopwatch.isRunning) return;
+    if (!stopwatch.isRunning){ // 정지상태라면 센서 흔들림 카운트만 확인
+      if(_sensorService.shakeCount > 0){
+        print('타이머가 멈춰있는데 흔들림 감지');
+        _sensorService.resetShakeCount();
+      }
+      return;
+    }
+
+    final currentShakeCount = _sensorService.shakeCount; //센서 흔들림 횟수 확인
+    if (currentShakeCount > 0) { //만약 흔들림이 감지됐다면
+      // 타이머를 멈추는 함수를 호출!
+      stopwatch.stop();
+      _controller.stop();
+
+      // 상태 텍스트를 "흔들려서 일시정지!" 같은 메시지로 업데이트!
+      setState(() {
+        statusText = "🚨 움직임 감지! 일시정지 🚨";
+        buttonText = "Start"; // 다시 시작할 수 있도록 버튼 텍스트 변경
+        // 🚨 그리고 흔들림 카운트를 0으로 리셋해줘서 다시 움직일 때까지 멈춰있게 해야 해!
+        _sensorService.resetShakeCount(); // (public 리셋 메서드 쓰면 더 좋아!)
+      });
+      return; // 멈췄으니 아래 타이머 업데이트 로직은 건너뛰기!
+    }
 
     if (stopwatch.elapsed >= duration) {
       stopwatch.stop();
@@ -101,6 +131,7 @@ class _TimerPageState extends State<TimerPage>
   void dispose() {
     _timer.cancel();
     _controller.dispose();
+    _sensorService.stopListening();
     super.dispose();
   }
 
