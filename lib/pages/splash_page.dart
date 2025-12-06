@@ -14,17 +14,14 @@ class _SplashPageState extends State<SplashPage> {
   void _startTimer() {
     Timer(const Duration(seconds: 3), () {
       if (!mounted) return;
-      Navigator.pushReplacementNamed(context, '/home');
+      Navigator.pushReplacementNamed(context, '/login');
     });
   }
 
   @override
   void initState() {
     super.initState();
-
-    // 전체 화면으로 설정 (Status bar, Navigation bar 숨김)
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
-
     _startTimer();
   }
 

@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "1049563044220",
+    "project_id": "study-timer-app-751f2",
+    "storage_bucket": "study-timer-app-751f2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1049563044220:android:eed27457082ccb18ccecf9",
+        "android_client_info": {
+          "package_name": "com.example.xtimer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1049563044220-dde8qsnc88hp9jd8ahh64a58r5aopo5r.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.xtimer",
+            "certificate_hash": "5280a1da309d91f2b973ee63507be7de40eb2dcd"
+          }
+        },
+        {
+          "client_id": "1049563044220-c5e1oh1d2urjkjl92gj7nqjrqg0olk05.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA25LwJq0ndlYK40C-aipjNiq3xgJcIu2k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1049563044220-c5e1oh1d2urjkjl92gj7nqjrqg0olk05.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1049563044220-qaieeo4e2ed5a8qkl45k8fvs8t3eptff.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.pedromassango.xtimer"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

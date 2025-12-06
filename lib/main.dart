@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:xtimer/data/database.dart';
-import 'package:xtimer/data/task_manager.dart';
-import 'package:xtimer/pages/home_page/home_bloc.dart';
-import 'package:xtimer/pages/new_task_page.dart';
-import 'package:xtimer/pages/splash_page.dart';
-import 'package:xtimer/pages/home_page/home_page.dart';
+import 'package:kakao_flutter_sdk_common/kakao_flutter_sdk_common.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'pages/login_page.dart';
+import 'pages/splash_page.dart';
+import 'pages/home_page/home_page.dart';
+import 'data/database.dart';
+import 'data/task_manager.dart';
+import 'pages/home_page/home_bloc.dart';
 
-/// 최신 BlocObserver (BlocDelegate 대체)
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 class MyObserver extends BlocObserver {
   @override
   void onTransition(Bloc bloc, Transition transition) {
@@ -16,49 +20,48 @@ class MyObserver extends BlocObserver {
   }
 }
 
-void main() {
-  /// Bloc Delegate (구버전) → BlocObserver (신버전)
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // 🔥 Firebase 초기화 (가장 중요한 추가 부분)
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  print("🔥 Firebase initialized: ${Firebase.apps}");
+
+  // 🔥 Kakao SDK 초기화
+  KakaoSdk.init(
+    nativeAppKey: "660acd54e02c9c0edaa528aa7fef440e",
+    javaScriptAppKey: "e27b403c714463c1aa3c49aeb0bd177a",
+  );
+
+  print("실제 앱 KeyHash: ${await KakaoSdk.origin}");
+
   Bloc.observer = MyObserver();
 
-  /// DI
-  DatabaseProvider dbProvider = DatabaseProvider.db;
-  TaskManager taskManager = TaskManager(dbProvider: dbProvider);
-  HomeBloc homeBloc = HomeBloc(taskManager: taskManager);
+  final database = DatabaseProvider.db;
+  final taskManager = TaskManager(dbProvider: database);
+  final homeBloc = HomeBloc(taskManager: taskManager);
 
   runApp(MyApp(homeBloc: homeBloc));
 }
 
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
   final HomeBloc homeBloc;
+
   const MyApp({Key? key, required this.homeBloc}) : super(key: key);
-
-  @override
-  _MyAppState createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-
-  @override
-  void dispose() {
-    /// bloc.dispose → bloc.close()
-    widget.homeBloc.close();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider<HomeBloc>.value(
-      value: widget.homeBloc,
+      value: homeBloc,
       child: MaterialApp(
+        navigatorKey: navigatorKey,
         debugShowCheckedModeBanner: false,
-        theme: ThemeData.light(),
-
-        /// 스플래시 페이지
         home: const SplashPage(),
-
         routes: {
-          '/home': (context) => HomePage(homeBloc: widget.homeBloc),
-          '/new': (context) => const NewTaskPage(),
+          '/login': (_) => const LoginPage(),
+          '/home': (_) => HomePage(homeBloc: homeBloc),
         },
       ),
     );

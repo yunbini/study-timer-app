@@ -6,6 +6,7 @@ import 'package:xtimer/pages/home_page/home_state.dart';
 import 'package:xtimer/widgets/task_widget.dart';
 import 'package:xtimer/pages/new_task_page.dart';
 import 'package:xtimer/model/task_model.dart';
+import 'package:xtimer/services/logout_service.dart';
 
 class HomePage extends StatefulWidget {
   final String title = 'Task Timer';
@@ -56,7 +57,6 @@ class _HomePageState extends State<HomePage> {
       },
     );
 
-    // bottom sheet에서 Task 객체가 반환되면 Bloc에 이벤트 전달
     if (newTask != null) {
       _homeBloc.add(SaveTaskEvent(task: newTask));
     }
@@ -84,12 +84,28 @@ class _HomePageState extends State<HomePage> {
             fontWeight: FontWeight.bold,
           ),
         ),
+
+        // 로그아웃 버튼
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.black),
+            onPressed: () async {
+              await LogoutService.signOutAll();
+
+              if (context.mounted) {
+                Navigator.pushReplacementNamed(context, '/login');
+              }
+            },
+          )
+        ],
       ),
+
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add, size: 26, color: Colors.black),
         backgroundColor: Colors.white,
         onPressed: _openBottomSheet,
       ),
+
       body: BlocBuilder<HomeBloc, HomeState>(
         bloc: _homeBloc,
         builder: (BuildContext context, HomeState state) {
