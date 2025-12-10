@@ -9,6 +9,9 @@ import 'pages/home_page/home_page.dart';
 import 'data/database.dart';
 import 'data/task_manager.dart';
 import 'pages/home_page/home_bloc.dart';
+import 'data/study_time_repository.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -41,7 +44,8 @@ void main() async {
 
   final database = DatabaseProvider.db;
   final taskManager = TaskManager(dbProvider: database);
-  final homeBloc = HomeBloc(taskManager: taskManager);
+  final studyRepo = StudyTimeRepository(firestore: FirebaseFirestore.instance,);
+  final homeBloc = HomeBloc(taskManager: taskManager, studyRepo:studyRepo,);
 
   runApp(MyApp(homeBloc: homeBloc));
 }
