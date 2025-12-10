@@ -5,6 +5,9 @@ import 'package:xtimer/services/sensor_service.dart';
 import 'package:xtimer/widgets/rounded_button_widget.dart';
 import 'package:xtimer/widgets/wave_animation.dart';
 import 'package:xtimer/services/sensor_service.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:xtimer/pages/home_page/home_bloc.dart';
+
 
 class TimerPage extends StatefulWidget {
   final Task task;
