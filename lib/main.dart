@@ -26,13 +26,13 @@ class MyObserver extends BlocObserver {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 🔥 Firebase 초기화 (가장 중요한 추가 부분)
+  // Firebase 초기화
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  print("🔥 Firebase initialized: ${Firebase.apps}");
+  print(" Firebase initialized: ${Firebase.apps}");
 
-  // 🔥 Kakao SDK 초기화
+  // Kakao SDK 초기화
   KakaoSdk.init(
     nativeAppKey: "660acd54e02c9c0edaa528aa7fef440e",
     javaScriptAppKey: "e27b403c714463c1aa3c49aeb0bd177a",

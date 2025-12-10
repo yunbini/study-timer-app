@@ -5,9 +5,9 @@ import '../main.dart';
 import 'package:flutter/material.dart';
 
 class NaverLoginService {
-  static const String clientId = "HpqL8HZ8pDg_YnSro6bF";
-  static const String clientSecret = "Tq7vWgZx2d";
-  static const String redirectUri = "http://127.0.0.1:8080/callback";
+  static const String clientId = "hR62aBFvOKdlF3hjB0s6";
+  static const String clientSecret = "jIqW58X6LF";
+  static const String redirectUri = "https://play.google.com/store/apps/details?id=com.example.xtimer";
 
   static Future<String?> loginWithNaverWebView() async {
     Completer<String?> loginResult = Completer();

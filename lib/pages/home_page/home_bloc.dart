@@ -8,7 +8,10 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final TaskManager taskManager;
   final StudyTimeRepository studyRepo;
 
-  HomeBloc({required this.taskManager}) : super(HomeStateLoading()) {
+  HomeBloc({
+    required this.taskManager,
+    required this.studyRepo,
+  }) : super(HomeStateLoading()) {
     /// Event → Handler 등록
     on<LoadTasksEvent>(_onLoadTasks);
     on<SaveTaskEvent>(_onSaveTask);
@@ -29,8 +32,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       SaveTaskEvent event, Emitter<HomeState> emit) async {
     emit(HomeStateLoading());
     await taskManager.addNewTask(event.task);
-
-    /// dispatch → add
     add(LoadTasksEvent());
   }
 
@@ -38,8 +39,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   Future<void> _onDeleteTask(
       DeleteTaskEvent event, Emitter<HomeState> emit) async {
     await taskManager.deleteTask(event.task);
-
-    /// 삭제 후 리스트 다시 로드
     add(LoadTasksEvent());
   }
 

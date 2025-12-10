@@ -12,28 +12,39 @@ dependencies:
   # Firebase
   firebase_core: ^3.4.0
   firebase_auth: ^5.1.0
+  cloud_firestore: ^5.4.2
 
-  # Google Login
+  # Social Login
   google_sign_in: ^6.2.1
-
-  # Kakao Login
   kakao_flutter_sdk_user: ^1.4.3
+  flutter_facebook_auth: ^6.2.0
 
-  # Naver OAuth (WebView 방식)
+  # Naver Login (WebView 방식)
   webview_flutter: ^4.7.0
+
+  # Networking
   http: ^1.1.0
 
-  cupertino_icons: ^1.0.8
+  # Local DB & Utils
   sqflite: ^2.4.2
   path_provider: any
-  flutter_launcher_icons: ^0.14.4
+  path: any
+  vector_math: any
+
+  # State Management
   bloc: ^9.1.0
   flutter_bloc: ^9.1.1
   equatable: ^2.0.7
   meta: ^1.1.6
+
+  # Icons
+  cupertino_icons: ^1.0.8
+
+  # Sensors
   sensors_plus: ^5.0.0
-  path: any
-  vector_math: any
+
+  # Launcher Icon
+  flutter_launcher_icons: ^0.14.4
 
 dev_dependencies:
   flutter_test:

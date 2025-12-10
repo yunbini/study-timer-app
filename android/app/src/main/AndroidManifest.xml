@@ -1,12 +1,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- 🔥 Firebase Auth / Naver / HTTP 통신 등에 필수 -->
+    <!-- Firebase Auth / Naver / HTTP 통신 등에 필수 -->
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:label="xtimer"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <meta-data
+            android:name="com.facebook.sdk.AutoInitEnabled"
+            android:value="true"/>
+
 
         <activity
             android:name=".MainActivity"
@@ -21,24 +25,15 @@
             <!-- Flutter 초기 테마 -->
             <meta-data
                 android:name="io.flutter.embedding.android.NormalTheme"
-                android:resource="@style/NormalTheme"/>
+                android:resource="@style/NormalTheme" />
 
             <!-- 앱 실행 Entry -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+
             </intent-filter>
 
-            <!-- 🔥 (선택 사항) 네이버 로그인 redirectUri 사용 시 필요 -->
-            <!-- redirectUri 를 예: naverlogin://callback 로 사용하는 경우 활성화 -->
-            <!--
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="naverlogin" android:host="callback" />
-            </intent-filter>
-            -->
         </activity>
 
         <!-- Flutter 필수 meta-data -->
@@ -46,15 +41,13 @@
             android:name="flutterEmbedding"
             android:value="2" />
 
-        <!-- Firebase / Google Play Services meta-data (필요할 때 자동 생성됨) -->
-        <!-- google-services.json이 정상 위치(android/app)에 있을 때 Gradle이 자동 처리 -->
     </application>
 
     <!-- Flutter ProcessTextPlugin 관련 -->
     <queries>
         <intent>
-            <action android:name="android.intent.action.PROCESS_TEXT"/>
-            <data android:mimeType="text/plain"/>
+            <action android:name="android.intent.action.PROCESS_TEXT" />
+            <data android:mimeType="text/plain" />
         </intent>
     </queries>
 
