@@ -109,7 +109,12 @@ class _TimerPageState extends State<TimerPage>
     if (stopwatch.elapsed >= duration) {
       stopwatch.stop();
       _controller.stop();
+      context.read<HomeBloc>().add(
+        SaveStudyTimeEvent(duration.inSeconds),
+      );
 
+
+      
       setState(() {
         statusText = "Finished";
         buttonText = "Restart";
