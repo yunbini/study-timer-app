@@ -41,3 +41,9 @@ class DeleteTaskEvent extends HomeEvent {
   @override
   String toString() => 'DeleteTaskEvent';
 }
+
+class SaveStudyTimeEvent extends HomeEvent {
+  final int seconds; // 저장할 공부 시간(초)
+  SaveStudyTimeEvent(this.seconds);
+}
+
