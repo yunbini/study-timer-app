@@ -29,3 +29,5 @@ class HomeStateLoaded extends HomeState {
   @override
   String toString() => 'HomeStateLoaded';
 }
+
+class HomeStateStudyTimeSaved extends HomeState {}
